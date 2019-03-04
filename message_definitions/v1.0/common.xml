@@ -3194,6 +3194,18 @@
         <description>Use precision landing, searching for beacon if not found when land command accepted (land normally if beacon cannot be found).</description>
       </entry>
     </enum>
+    <enum name="MAV_EVENT_ERROR_REASON">
+      <description>Reason for an event error response.</description>
+      <entry value="0" name="MAV_EVENT_ERROR_REASON_UNAVAILABLE">
+        <description>The requested event is not available (anymore).</description>
+      </entry>
+    </enum>
+    <enum name="MAV_EVENT_CURRENT_SEQUENCE_FLAGS">
+      <description>Flags for CURRENT_EVENT_SEQUENCE.</description>
+      <entry value="1" name="MAV_EVENT_CURRENT_SEQUENCE_FLAGS_RESET">
+        <description>A sequence reset has happened (e.g. vehicle reboot).</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="0" name="HEARTBEAT">
@@ -5112,6 +5124,36 @@
       <field type="uint16_t" default="0" name="cell_offset">The cell number of the first index in the 'voltages' array field. Using this field allows you to specify cell voltages for batteries with more than 16 cells.</field>
       <field type="uint16_t[16]" name="voltages" units="mV">Individual cell voltages. Batteries with more 16 cells can use the cell_offset field to specify the cell offset for the array specified in the current message . Index values above the valid cell count for this battery should have the UINT16_MAX value.</field>
     </message>
+
+	<!-- Events Protocol -->
+    <message id="375" name="EVENT">
+      <description>TODO. Most events are broadcast, some can be specific to a target component.</description>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint16_t" name="id">Event ID</field>
+      <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot when the event happened).</field>
+      <field type="uint16_t" name="sequence">Sequence number.</field>
+	  <field type="uint8_t[40]" name="arguments">Arguments depend on event ID. TODO: how long should it be?.</field>
+    </message>
+    <message id="376" name="CURRENT_EVENT_SEQUENCE">
+      <description>Broadcast for the current latest event sequence number for a component.</description>
+      <field type="uint16_t" name="sequence">Sequence number.</field>
+      <field type="uint8_t" name="flags" enum="MAV_EVENT_CURRENT_SEQUENCE_FLAGS" display="bitmask">Flag bitset.</field>
+    </message>
+    <message id="377" name="REQUEST_EVENT">
+      <description>Request an event to be (re-)sent. TODO: allow a range?</description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint16_t" name="sequence">Sequence number of the requested event.</field>
+    </message>
+    <message id="378" name="EVENT_ERROR">
+      <description>Response to a REQUEST_EVENT in case of an error (e.g. the event is not available anymore).</description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint16_t" name="sequence">Sequence number.</field>
+      <field type="uint16_t" name="sequence_oldest_available">Oldest Sequence number that is still available after the sequence set in REQUEST_EVENT.</field>
+	  <field type="uint8_t" name="reason" enum="MAV_EVENT_ERROR_REASON">Error reason.</field>
+    </message>
+
     <!-- Rover specific messages -->
     <message id="9000" name="WHEEL_DISTANCE">
       <description>Cumulative distance traveled for each reported wheel.</description>
