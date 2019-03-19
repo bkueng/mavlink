@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<events_interface>
+  <version>1</version>
+  <dialect>0</dialect>
+  <enums>
+    <enum name="GPS_FIX" type="uint8_t">
+      <description>GPS Fix</description>
+      <entry value="0" name="no_fix">
+        <description>No Fix</description>
+      </entry>
+      <entry value="1" name="oned_fix">
+        <description>1D Fix</description>
+      </entry>
+      <entry value="2" name="twod_fix">
+        <description>2D Fix</description>
+      </entry>
+      <entry value="3" name="threed_fix">
+        <description>3D Fix</description>
+      </entry>
+    </enum>
+
+    <enum name="HEALTH_TYPE" type="uint32_t" display="bitset">
+      <description>Bitset to report the health of subsystems and sensors</description>
+	  <!-- this is similar to MAV_SYS_STATUS_SENSOR -->
+	  <entry value="1" name="sensor_imu"><description></description></entry>
+	  <entry value="2" name="sensor_absolute_pressure"><description></description></entry>
+	  <entry value="4" name="sensor_differential_pressure"><description></description></entry>
+	  <entry value="8" name="sensor_gps"><description></description></entry>
+	  <entry value="16" name="sensor_optical_flow"><description></description></entry>
+	  <entry value="32" name="sensor_vision_position"><description></description></entry>
+	  <entry value="64" name="sensor_distance"><description></description></entry>
+	  <entry value="128" name="rc_receiver"><description></description></entry>
+	  <entry value="256" name="motors"><description></description></entry>
+	  <entry value="512" name="utm"><description></description></entry>
+	  <entry value="1024" name="logging"><description></description></entry>
+	  <entry value="2048" name="battery"><description></description></entry>
+	  <entry value="4096" name="communication_links"><description></description></entry>
+	  <entry value="8192" name="rate_controller"><description></description></entry>
+	  <entry value="16384" name="attitude_controller"><description></description></entry>
+	  <entry value="32768" name="position_controller"><description></description></entry>
+	  <entry value="65536" name="attitude_estimate"><description></description></entry>
+	  <entry value="131072" name="position_estimate"><description></description></entry>
+	  <entry value="262144" name="mission"><description></description></entry>
+	  <entry value="524288" name="avoidance"><description></description></entry>
+	  <entry value="1048576" name="system"><description>System (e.g. CPU or RAM)</description></entry>
+	  <entry value="2097152" name="camera"><description></description></entry>
+	  <entry value="4194304" name="gimbal"><description></description></entry>
+	  <entry value="8388608" name="payload"><description></description></entry>
+	  <entry value="16777216" name="local_position"><description>Local position estimate</description></entry>
+	  <entry value="33554432" name="global_position"><description>Global position estimate</description></entry>
+		  <!-- 26 entries -->
+    </enum>
+
+    <enum name="FLIGHT_MODE_CATEGORY" type="uint8_t" display="bitset">
+      <description>Flight mode categories</description>
+	  <entry value="1" name="current"><description>Current flight mode</description></entry>
+	  <entry value="2" name="manual"><description>Fully Manual flight without any stabilization</description></entry>
+	  <entry value="4" name="rate"><description>Rate-stabilized flight mode (acro)</description></entry>
+	  <entry value="8" name="attitude"><description>Attitude-stabilized flight mode</description></entry>
+	  <entry value="16" name="altitude"><description>Altitude-stabilized flight mode</description></entry>
+	  <entry value="32" name="position"><description>Position-controlled flight mode</description></entry>
+	  <entry value="64" name="autonomous"><description>Autonomous flight (e.g. RTL, Takeoff)</description></entry>
+	  <entry value="128" name="mission"><description></description>Mission flights (e.g. waypoints, survey)</entry>
+    </enum>
+
+    <enum name="ARMING_CHECKS_SUMMARY_FLAGS" type="uint32_t" display="bitset">
+      <description>Bitset for the ARMING_CHECKS_SUMMARY message (for future extensions)</description>
+    </enum>
+  </enums>
+
+  <events>
+	<group name="default">
+		<event id="0" name="FIRST_EVENT" loglevel="info">
+			<message>First test event</message>
+			<description>description</description>
+		</event>
+		<event id="1" name="TEST" loglevel="warning">
+			<message>Second test event arg2={2}, arg1={1}</message>
+			<description>description.
+This can be longer and span multiple lines. Whereas the message should only be a single line.
+<autopilot name="px4">
+It can have references to parameters, like <param>SYS_AUTOSTART</param>.</description>
+</autopilot>
+			<argument type="float" name="float_argument" display_digits="3">1. argument</argument>
+			<argument type="uint32_t" name="int_argument">2. argument</argument>
+		</event>
+		<event id="2" name="GPS_FIX_TEST" loglevel="warning" loglevel_internal="disabled">
+			<message>GPS: {1}</message>
+			<description>description</description>
+			<argument name="gps_fix" enum="GPS_FIX">GPS fix</argument>
+		</event>
+		<event id="3" name="TEST_LOGGED" loglevel="disabled" loglevel_internal="warning">
+			<message>This message is only logged</message>
+			<description>description</description>
+			<argument type="uint8_t" name="argument"></argument>
+		</event>
+	</group>
+
+	<group name="health">
+		<event id="10" name="HEALTH_SUMMARY" loglevel="protocol" loglevel_internal="info">
+			<message>Overall subsystem and sensor health summary message</message>
+			<description></description>
+			<argument name="is_present" enum="HEALTH_TYPE">Bitset for each component if present or not</argument>
+			<argument name="error" enum="HEALTH_TYPE">Bitset for each component if there is a failure or fatal error</argument>
+			<argument name="warning" enum="HEALTH_TYPE">Bitset for each component if there are warnings</argument>
+		</event>
+
+		<event id="11" name="HEALTH_SENSOR_FAILURE" loglevel="critical">
+			<message>{2} sensor {3} failure: {4}</message>
+			<description></description>
+			<argument name="flight_modes" enum="FLIGHT_MODE_CATEGORY">Bitset for affected flight modes</argument>
+			<argument name="health_type" enum="HEALTH_TYPE">Affected health type (TODO: could also be an uint8_t instead of a 32bit bitmask)</argument>
+			<argument name="sensor_type" enum="SENSOR_TYPE">Affected sensor (TODO: add enum)</argument>
+			<argument name="sensor_instance" type="uint8_t">Sensor instance</argument>
+			<argument name="failure_reason" enum="SENSOR_FAILURE_REASON">Failure reason (TODO: add enum)</argument>
+		</event>
+
+		<event id="12" name="HEALTH_SYSTEM_CPU_OVERLOAD" loglevel="critical">
+			<message>CPU usage is too high ({2}%)</message>
+			<description>(describe how to resolve the issue)</description>
+			<argument name="flight_modes" enum="FLIGHT_MODE_CATEGORY">Bitset for affected flight modes</argument>
+			<argument name="health_type" enum="HEALTH_TYPE">Affected health type</argument>
+			<argument name="cpu_level" type="uint8_t">CPU usage [0-100]</argument>
+		</event>
+	</group>
+
+	<group name="arming_checks">
+		<event id="20" name="ARMING_CHECKS_SUMMARY" loglevel="protocol" loglevel_internal="info">
+			<message>Overall arming checks status message</message>
+			<description></description>
+			<argument name="error" enum="HEALTH_TYPE">Bitset for each component if there is an error (over all flight modes)</argument>
+			<argument name="warning" enum="HEALTH_TYPE">Bitset for each component if there are warnings</argument>
+			<argument name="can_arm" enum="FLIGHT_MODE_CATEGORY">Bitset for each flight modes if arming is allowed</argument>
+			<argument name="flags" enum="ARMING_CHECKS_SUMMARY_FLAGS"></argument>
+		</event>
+
+		<event id="21" name="ARMING_CHECKS_SAFETY_BUTTON" loglevel="info">
+			<message>Press safety button before the vehicle can be armed</message>
+			<description>(change the parameter XY if you want to disable the safety button)</description>
+			<argument name="flight_modes" enum="FLIGHT_MODE_CATEGORY">Bitset for affected flight modes</argument>
+		</event>
+	</group>
+
+	<group name="calibration">
+		<!-- ... -->
+	</group>
+
+  </events>
+</events_interface>
